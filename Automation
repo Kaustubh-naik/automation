@@ -1,0 +1,78 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+import time
+
+#To open website
+driver = webdriver.Chrome(
+executable_path="C:\\Users\\knaik\\Downloads\\chromedriver_win32\\chromedriver.exe"
+)
+website_url = "http://10.100.171.175:3000"
+driver.get(website_url)
+time.sleep(1)
+
+#To login
+username = 'kaus@gmail.com'
+password = 'Test@123'
+username_input = driver.find_element(By.XPATH,'//label[text()="Email"]/following-sibling::div/input')
+password_input = driver.find_element(By.XPATH,'//label[text()="Password"]/following-sibling::div/input')
+username_input.send_keys(username)
+password_input.send_keys(password)
+login = driver.find_element(By.XPATH,"//button[text()='Login']")
+login.click()
+time.sleep(3)
+print("Login successful")
+
+#for search
+search_grid = []
+text_field = driver.find_element(By.XPATH,"//input").send_keys("Rick")
+time.sleep(3)
+while True:
+        last_element = driver.find_elements(By.XPATH, "//div[@data-rowindex = '19']")
+        arr = driver.find_elements(By.XPATH,"//div[@data-field = 'name' and @role = 'cell']/div")
+        for i in arr:
+            if i.text not in search_grid:
+                search_grid.append(i.text)
+        driver.execute_script("arguments[0].scrollIntoView();", arr[-1])
+        if last_element:
+             last = driver.find_element(By.XPATH, '//div[@data-rowindex = "19"]/div[@data-field="name"]/div[text()]')
+             search_grid.append(last.text)
+             break
+        time.sleep(1)
+for i in search_grid:
+    assert ("rick" in i.lower()),f"rick not in {i.lower()}"
+print("Search validated")
+
+# For Scrolling to top
+action = ActionChains(driver)
+while True:
+    first_element = driver.find_elements(By.XPATH, "//div[@data-rowindex = '1']")
+    res = driver.find_elements(By.XPATH, '//div[@data-field="name"]/div[text()]')
+    action.scroll_to_element(res[0]).perform()
+    if first_element:
+        res = driver.find_element(By.XPATH, '//div[@data-rowindex = "1"]/div[@data-field="name"]/div[text()]')
+        break
+    time.sleep(1)
+print("Scrol to top")
+
+# For Sorting
+sort_button = driver.find_element(By.XPATH,"(//button)[1]")
+ActionChains(driver).move_to_element(sort_button).click(sort_button).perform()
+sort_list = []
+while True:
+        for_parent_of_last = driver.find_elements(By.XPATH, "//div[@data-rowindex = '19']")
+        res = driver.find_elements(By.XPATH, '//div[@class="MuiDataGrid-row"]/div[@data-field="name"]/div[text()]')
+        for i in res:
+            if i.text not in sort_list:
+                sort_list.append(i.text)
+        driver.execute_script("arguments[0].scrollIntoView();", res[-1])
+        if for_parent_of_last:
+            res = driver.find_element(By.XPATH, '//div[@data-rowindex = "19"]/div[@data-field="name"]/div[text()]')
+            sort_list.append(res.text)
+            break
+        time.sleep(3)
+assert sort_list == sorted(sort_list),f"{sort_list} is not sorted."
+print("Sorting validated")
+
+
+   
